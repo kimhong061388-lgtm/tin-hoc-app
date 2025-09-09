@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng Dụng Học Tập Tương Tác</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        .animated-bg {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.5; }
+        }
+        
+        /* Card animations */
+        .card-entrance {
+            animation: slideInUp 0.8s ease-out;
+        }
+        
+        @keyframes slideInUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Enhanced draggable */
+        .draggable {
+            cursor: grab;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .draggable::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .draggable:hover::before {
+            left: 100%;
+        }
+        
+        .draggable:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        .draggable:active {
+            cursor: grabbing;
+            transform: rotate(8deg) scale(1.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        /* Enhanced drop zones */
+        .drop-zone {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .drop-zone::after {
+            content: '✨';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 2rem;
+            transition: transform 0.3s ease;
+            opacity: 0;
+        }
+        
+        .drop-zone:hover::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0.7;
+        }
+        
+        .drop-zone.drag-over {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-color: #f59e0b;
+            transform: scale(1.08) rotate(2deg);
+            box-shadow: 0 20px 40px rgba(245, 158, 11, 0.4);
+            animation: pulse 0.6s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { box-shadow: 0 20px 40px rgba(245, 158, 11, 0.4); }
+            to { box-shadow: 0 25px 50px rgba(245, 158, 11, 0.6); }
+        }
+        
+        /* Success animations */
+        .matched {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0) !important;
+            border-color: #16a34a !important;
+            animation: successPop 0.8s ease-out;
+            position: relative;
+        }
+        
+        .matched::before {
+            content: '🎉';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 1.5rem;
+            animation: celebrate 1s ease-out;
+        }
+        
+        @keyframes successPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes celebrate {
+            0% { transform: scale(0) rotate(0deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+            100% { transform: scale(1) rotate(360deg); opacity: 0.8; }
+        }
+        
+        /* Error animations */
+        .wrong {
+            background: linear-gradient(135deg, #fecaca, #fca5a5) !important;
+            border-color: #dc2626 !important;
+            animation: errorShake 0.8s ease-in-out;
+            position: relative;
+        }
+        
+        .wrong::before {
+            content: '❌';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 1.2rem;
+            animation: errorPop 0.5s ease-out;
+        }
+        
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+            20%, 40%, 60%, 80% { transform: translateX(8px); }
+        }
+        
+        @keyframes errorPop {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.9; }
+        }
+        
+        /* Progress bar animation */
+        .progress-bar {
+            background: linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6);
+            background-size: 200% 100%;
+            animation: progressGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes progressGlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* Button enhancements */
+        .btn-primary {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Score counter animation */
+        .score-counter {
+            animation: scoreGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes scoreGlow {
+            from { text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+            to { text-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.4); }
+        }
+        
+        /* Celebration effects */
+        .celebration {
+            animation: celebrationBounce 1s ease-out;
+        }
+        
+        @keyframes celebrationBounce {
+            0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+            40%, 43% { transform: translate3d(0, -30px, 0); }
+            70% { transform: translate3d(0, -15px, 0); }
+            90% { transform: translate3d(0, -4px, 0); }
+        }
+        
+        /* Confetti animation */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f43f5e;
+            animation: confetti-fall 3s linear infinite;
+            z-index: 1000;
+        }
+        
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+        
+        /* Lesson card hover effects */
+        .lesson-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .lesson-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .lesson-card:hover::before {
+            opacity: 1;
+        }
+        
+        .lesson-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        }
+        
+        /* Typing animation for text */
+        .typing-text {
+            overflow: hidden;
+            border-right: 2px solid #3b82f6;
+            white-space: nowrap;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #3b82f6; }
+        }
+        
+        /* Smooth transitions for all elements */
+        * {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="animated-bg min-h-screen relative">
+    <!-- Floating Particles -->
+    <div class="particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 0.5s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 1.5s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 2.5s;"></div>
+    </div>
+    <!-- Màn hình đăng ký -->
+    <div id="registration-screen" class="min-h-screen flex items-center justify-center p-4 relative z-10">
+        <div class="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 w-full max-w-md card-entrance">
+            <div class="text-center mb-8">
+                <div class="text-6xl mb-4 animate-bounce">💻</div>
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">Học Tin Học</h1>
+                <p class="text-gray-600 text-lg">Ghép nối thiết bị với chức năng!</p>
+                <div class="mt-4 flex justify-center space-x-2">
+                    <span class="text-2xl animate-pulse">⚡</span>
+                    <span class="text-2xl animate-pulse" style="animation-delay: 0.2s;">🎯</span>
+                    <span class="text-2xl animate-pulse" style="animation-delay: 0.4s;">🚀</span>
+                </div>
+            </div>
+            
+            <form id="student-form" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Họ và tên</label>
+                    <input type="text" id="student-name" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                           placeholder="Nhập họ và tên của bạn">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Lớp</label>
+                    <input type="text" id="student-class" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                           placeholder="Ví dụ: 6A1, 7B2, 8C3">
+                </div>
+                
+                <button type="submit" 
+                        class="w-full btn-primary text-white py-4 px-6 rounded-xl font-bold text-lg shadow-2xl relative overflow-hidden group">
+                    <span class="relative z-10">Tiếp Theo 🚀</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-pink-500 to-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Màn hình bắt đầu -->
+    <div id="lesson-selection" class="hidden min-h-screen flex items-center justify-center p-4 relative z-10">
+        <div class="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 w-full max-w-2xl card-entrance">
+            <div class="text-center mb-8">
+                <div class="text-6xl mb-4 animate-bounce">📚</div>
+                <h2 class="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">Bài Kiểm Tra</h2>
+                <p class="text-gray-600 text-lg">Làm cả 2 bài tập để hoàn thành bài kiểm tra</p>
+                <div class="mt-4 flex justify-center space-x-2">
+                    <span class="text-2xl animate-pulse">🎓</span>
+                    <span class="text-2xl animate-pulse" style="animation-delay: 0.3s;">✨</span>
+                    <span class="text-2xl animate-pulse" style="animation-delay: 0.6s;">🏆</span>
+                </div>
+            </div>
+            
+            <div class="space-y-4 mb-8">
+                <!-- Bài 1 -->
+                <div class="lesson-card bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 rounded-2xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-4">
+                                <div class="text-4xl animate-pulse">⌨️</div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-blue-800 mb-1">Bài 1: Thiết Bị Nhập Liệu</h3>
+                                    <p class="text-blue-600">Ghép thiết bị với chức năng nhập thông tin</p>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <span class="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded-full">Dễ</span>
+                                        <span class="text-xs text-blue-500">⏱️ 5 phút</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-blue-500 mb-1">5 câu hỏi</div>
+                            <div class="text-2xl font-bold text-blue-700 score-counter">5 điểm</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bài 2 -->
+                <div class="lesson-card bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 rounded-2xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-4">
+                                <div class="text-4xl animate-pulse" style="animation-delay: 0.5s;">🖨️</div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-green-800 mb-1">Bài 2: Thiết Bị Xuất Liệu</h3>
+                                    <p class="text-green-600">Ghép thiết bị với chức năng xuất thông tin</p>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <span class="text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full">Dễ</span>
+                                        <span class="text-xs text-green-500">⏱️ 4 phút</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-green-500 mb-1">4 câu hỏi</div>
+                            <div class="text-2xl font-bold text-green-700 score-counter">4 điểm</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center gap-2 text-yellow-800">
+                    <div class="text-xl">⚡</div>
+                    <div class="font-semibold">Tổng điểm: 9 điểm</div>
+                </div>
+                <p class="text-sm text-yellow-700 mt-1">Bạn sẽ làm lần lượt cả 2 bài tập</p>
+            </div>
+
+            <div class="text-center space-y-4">
+                <button onclick="startExam()" class="w-full btn-primary text-white py-5 px-8 rounded-2xl font-bold text-xl shadow-2xl relative overflow-hidden group">
+                    <span class="relative z-10 flex items-center justify-center gap-3">
+                        <span class="text-2xl animate-bounce">🚀</span>
+                        Bắt Đầu Làm Bài
+                        <span class="text-2xl animate-bounce" style="animation-delay: 0.2s;">⚡</span>
+                    </span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </button>
+                <button onclick="goBackToRegistration()" class="text-gray-500 hover:text-gray-700 transition-all duration-300 hover:scale-105">
+                    ← Quay lại đăng ký
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Màn hình trò chơi -->
+    <div id="game-screen" class="hidden min-h-screen p-4 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-6 mb-6 card-entrance">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent" id="lesson-title">Ghép Nối Thiết Bị - Chức Năng</h2>
+                        <p class="text-gray-600 text-lg mt-2">Kéo thả thiết bị vào chức năng phù hợp!</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="text-xl animate-pulse">🎯</span>
+                            <span class="text-sm text-gray-500">Hãy ghép đúng để ghi điểm!</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-5xl font-bold text-blue-600 score-counter" id="score">0</div>
+                        <div class="text-sm text-gray-500">điểm</div>
+                        <div class="text-xs text-gray-400 mt-1">🏆 Mục tiêu: 9 điểm</div>
+                    </div>
+                </div>
+                <div class="mt-6 bg-gray-200 rounded-full h-3 shadow-inner">
+                    <div id="progress-bar" class="progress-bar h-3 rounded-full transition-all duration-500 shadow-lg" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Game Area -->
+            <div class="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 card-entrance">
+                <div class="grid grid-cols-2 gap-12">
+                    <!-- Cột 1: Thiết bị -->
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center bg-gradient-to-r from-blue-100 to-blue-200 py-4 rounded-2xl shadow-lg" id="column1-title">🖥️ Tên Thiết Bị</h3>
+                        <div id="questions-column" class="space-y-4">
+                            <!-- Questions will be populated by JavaScript -->
+                        </div>
+                        <div class="mt-6 text-center">
+                            <div class="text-sm text-blue-600 font-medium">💡 Kéo các thiết bị sang bên phải</div>
+                        </div>
+                    </div>
+
+                    <!-- Đường kẻ giữa với hiệu ứng -->
+                    <div class="relative">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 via-purple-500 to-green-400 rounded-full shadow-lg"></div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center bg-gradient-to-r from-green-100 to-green-200 py-4 rounded-2xl shadow-lg" id="column2-title">⚙️ Chức Năng</h3>
+                        <div id="answers-column" class="space-y-4">
+                            <!-- Answers will be populated by JavaScript -->
+                        </div>
+                        <div class="mt-6 text-center">
+                            <div class="text-sm text-green-600 font-medium">🎯 Thả thiết bị vào đây</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="text-center mt-8">
+                <button id="check-answers" 
+                        class="btn-primary text-white py-4 px-12 rounded-2xl font-bold text-xl shadow-2xl relative overflow-hidden group">
+                    <span class="relative z-10 flex items-center justify-center gap-3">
+                        <span class="text-2xl animate-pulse">✨</span>
+                        Kiểm Tra Đáp Án
+                        <span class="text-2xl animate-pulse" style="animation-delay: 0.3s;">🎯</span>
+                    </span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-green-400 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </button>
+                <div class="mt-4 text-sm text-gray-500">
+                    <span class="animate-pulse">💡</span> Nhấn khi đã ghép xong tất cả
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Màn hình chuyển bài -->
+    <div id="transition-screen" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md text-center">
+            <div class="text-6xl mb-6">🎯</div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Hoàn Thành Bài 1!</h2>
+            
+            <div class="bg-blue-50 rounded-lg p-6 mb-6">
+                <div class="text-sm text-gray-600 mb-2">Điểm Bài 1</div>
+                <div class="text-3xl font-bold text-blue-600" id="lesson1-score">0</div>
+                <div class="text-sm text-gray-500">/ 5 điểm</div>
+            </div>
+            
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center gap-2 text-green-800 justify-center">
+                    <div class="text-xl">📝</div>
+                    <div class="font-semibold">Tiếp theo: Bài 2</div>
+                </div>
+                <p class="text-sm text-green-700 mt-1">Thiết bị xuất liệu (4 câu hỏi)</p>
+            </div>
+            
+            <button id="continue-to-lesson2" 
+                    class="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transform hover:scale-105 transition-all duration-200">
+                Làm Bài 2 →
+            </button>
+        </div>
+    </div>
+
+    <!-- Màn hình kết quả -->
+    <div id="result-screen" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl text-center">
+            <div class="text-8xl mb-6" id="result-emoji">🎉</div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Hoàn Thành!</h2>
+            
+            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                <div class="text-sm text-gray-600 mb-2">Học sinh</div>
+                <div class="text-xl font-semibold text-gray-800" id="final-name"></div>
+                
+                <div class="text-sm text-gray-600 mb-2 mt-4">Lớp</div>
+                <div class="text-lg font-medium text-gray-700" id="final-class"></div>
+                
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div class="bg-blue-50 rounded-lg p-3">
+                        <div class="text-xs text-blue-600">Bài 1</div>
+                        <div class="text-lg font-bold text-blue-700" id="final-lesson1-score">0</div>
+                        <div class="text-xs text-blue-500">/ 5 điểm</div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-3">
+                        <div class="text-xs text-green-600">Bài 2</div>
+                        <div class="text-lg font-bold text-green-700" id="final-lesson2-score">0</div>
+                        <div class="text-xs text-green-500">/ 4 điểm</div>
+                    </div>
+                </div>
+                
+                <div class="text-sm text-gray-600 mb-2 mt-4">Tổng điểm</div>
+                <div class="text-4xl font-bold text-purple-600" id="final-total-score"></div>
+                <div class="text-sm text-gray-500 mt-1">/ 9 điểm</div>
+            </div>
+            
+            <div class="space-y-3">
+                <button id="view-details" 
+                        class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-orange-600 hover:to-red-600 transform hover:scale-105 transition-all duration-200">
+                    Xem Chi Tiết Đáp Án 📋
+                </button>
+                <button id="send-result" 
+                        class="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-green-600 hover:to-teal-600 transform hover:scale-105 transition-all duration-200">
+                    Gửi Kết Quả Cho Giáo Viên 📧
+                </button>
+                <button id="new-student" 
+                        class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-200">
+                    Học Sinh Mới 👤
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Màn hình chi tiết đáp án -->
+    <div id="detail-screen" class="hidden min-h-screen p-4 relative z-10">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 card-entrance">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">Chi Tiết Đáp Án</h2>
+                    <div class="flex justify-center items-center gap-4 mb-6">
+                        <div class="bg-blue-50 rounded-lg p-3">
+                            <div class="text-sm text-blue-600">Học sinh</div>
+                            <div class="font-bold text-blue-800" id="detail-name"></div>
+                        </div>
+                        <div class="bg-green-50 rounded-lg p-3">
+                            <div class="text-sm text-green-600">Lớp</div>
+                            <div class="font-bold text-green-800" id="detail-class"></div>
+                        </div>
+                        <div class="bg-purple-50 rounded-lg p-3">
+                            <div class="text-sm text-purple-600">Tổng điểm</div>
+                            <div class="font-bold text-purple-800" id="detail-total"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bài 1 Details -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-blue-800 mb-4 flex items-center gap-2">
+                        <span class="text-3xl">⌨️</span>
+                        Bài 1: Thiết Bị Nhập Liệu
+                        <span class="text-lg bg-blue-100 text-blue-700 px-3 py-1 rounded-full" id="lesson1-detail-score">0/5</span>
+                    </h3>
+                    <div id="lesson1-details" class="space-y-3">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Bài 2 Details -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-green-800 mb-4 flex items-center gap-2">
+                        <span class="text-3xl">🖨️</span>
+                        Bài 2: Thiết Bị Xuất Liệu
+                        <span class="text-lg bg-green-100 text-green-700 px-3 py-1 rounded-full" id="lesson2-detail-score">0/4</span>
+                    </h3>
+                    <div id="lesson2-details" class="space-y-3">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button id="back-to-result" 
+                            class="bg-gradient-to-r from-gray-500 to-gray-600 text-white py-3 px-8 rounded-lg font-semibold hover:from-gray-600 hover:to-gray-700 transform hover:scale-105 transition-all duration-200">
+                        ← Quay Lại Kết Quả
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game data
+        const lessons = {
+            1: {
+                title: "Bài 1: Thiết Bị Nhập Liệu",
+                column1: "⌨️ Tên Thiết Bị",
+                column2: "⚙️ Chức Năng",
+                data: [
+                    { question: "Bàn phím", answer: "Tiếp nhận thông tin vào thông qua gõ phím (chữ cái, chữ số,...)", id: 1 },
+                    { question: "Chuột", answer: "Tiếp nhận thông tin vào thông qua các nút nhấn, nút cuộn", id: 2 },
+                    { question: "Màn hình cảm ứng", answer: "Tiếp nhận thông tin vào thông qua tiếp xúc của ngón tay, bút cảm ứng", id: 3 },
+                    { question: "Micro", answer: "Tiếp nhận thông tin vào ở dạng âm thanh", id: 4 },
+                    { question: "Máy quét", answer: "Tiếp nhận thông tin vào ở dạng hình ảnh", id: 5 }
+                ]
+            },
+            2: {
+                title: "Bài 2: Thiết Bị Xuất Liệu",
+                column1: "🖨️ Tên Thiết Bị",
+                column2: "📤 Chức Năng",
+                data: [
+                    { question: "Màn hình", answer: "Đưa thông tin ra thông qua việc hiển thị trên thiết bị", id: 1 },
+                    { question: "Loa, tai nghe", answer: "Đưa thông tin ra ở dạng âm thanh", id: 2 },
+                    { question: "Máy in", answer: "Đưa thông tin ra thông qua việc in ra giấy", id: 3 },
+                    { question: "Máy chiếu", answer: "Đưa thông tin ra thông qua việc chiếu lên màn chiếu", id: 4 }
+                ]
+            }
+        };
+
+        // Game state
+        let studentInfo = {};
+        let currentLesson = 1;
+        let currentScore = 0;
+        let totalScore = 0;
+        let lesson1Score = 0;
+        let lesson2Score = 0;
+        let matches = {};
+        let totalQuestions = 0;
+        let gameData = [];
+        let completedLessons = [];
+        let lesson1Answers = {};
+        let lesson2Answers = {};
+
+        // Screen elements
+        const registrationScreen = document.getElementById('registration-screen');
+        const lessonSelection = document.getElementById('lesson-selection');
+        const gameScreen = document.getElementById('game-screen');
+        const transitionScreen = document.getElementById('transition-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const detailScreen = document.getElementById('detail-screen');
+
+        // Form handling
+        document.getElementById('student-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            studentInfo.name = document.getElementById('student-name').value;
+            studentInfo.class = document.getElementById('student-class').value;
+            showLessonSelection();
+        });
+
+        function showLessonSelection() {
+            registrationScreen.classList.add('hidden');
+            lessonSelection.classList.remove('hidden');
+        }
+
+        function startExam() {
+            currentLesson = 1;
+            completedLessons = [];
+            totalScore = 0;
+            lesson1Score = 0;
+            lesson2Score = 0;
+            lessonSelection.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            initializeGame();
+        }
+
+        function goBackToRegistration() {
+            lessonSelection.classList.add('hidden');
+            registrationScreen.classList.remove('hidden');
+        }
+
+        function initializeGame() {
+            const lesson = lessons[currentLesson];
+            gameData = lesson.data;
+            totalQuestions = gameData.length;
+            currentScore = 0;
+            matches = {};
+            
+            // Update UI
+            document.getElementById('lesson-title').textContent = lesson.title;
+            document.getElementById('column1-title').textContent = lesson.column1;
+            document.getElementById('column2-title').textContent = lesson.column2;
+            
+            updateScore();
+            createGameElements();
+        }
+
+        function createGameElements() {
+            const questionsColumn = document.getElementById('questions-column');
+            const answersColumn = document.getElementById('answers-column');
+            
+            questionsColumn.innerHTML = '';
+            answersColumn.innerHTML = '';
+
+            // Shuffle answers for random order
+            const shuffledAnswers = [...gameData].sort(() => Math.random() - 0.5);
+
+            // Create question elements (thiết bị)
+            gameData.forEach(item => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'bg-blue-50 border-2 border-blue-200 rounded-lg p-5 text-center font-semibold text-gray-800 draggable cursor-grab hover:bg-blue-100 hover:shadow-md transition-all min-h-[70px] flex items-center justify-center text-lg';
+                questionDiv.textContent = item.question;
+                questionDiv.draggable = true;
+                questionDiv.dataset.id = item.id;
+                
+                questionDiv.addEventListener('dragstart', handleDragStart);
+                questionsColumn.appendChild(questionDiv);
+            });
+
+            // Create answer drop zones (chức năng)
+            shuffledAnswers.forEach(item => {
+                const answerDiv = document.createElement('div');
+                answerDiv.className = 'bg-green-50 border-2 border-dashed border-green-300 rounded-lg p-5 font-medium text-gray-700 drop-zone min-h-[70px] flex items-center justify-center hover:bg-green-100 hover:shadow-md transition-all text-sm leading-relaxed';
+                answerDiv.textContent = item.answer;
+                answerDiv.dataset.correctId = item.id;
+                
+                answerDiv.addEventListener('dragover', handleDragOver);
+                answerDiv.addEventListener('drop', handleDrop);
+                answerDiv.addEventListener('dragleave', handleDragLeave);
+                answersColumn.appendChild(answerDiv);
+            });
+        }
+
+        let draggedElement = null;
+
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.style.opacity = '0.5';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.target.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.target.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.target.classList.remove('drag-over');
+            
+            if (draggedElement) {
+                const questionId = draggedElement.dataset.id;
+                const answerId = e.target.dataset.correctId;
+                
+                // Store the match
+                matches[questionId] = answerId;
+                
+                // Visual feedback
+                e.target.style.backgroundColor = '#f0f9ff';
+                e.target.style.borderColor = '#0ea5e9';
+                e.target.style.borderStyle = 'solid';
+                e.target.innerHTML = `
+                    <div class="text-gray-700 text-sm mb-3 leading-relaxed">${e.target.textContent}</div>
+                    <div class="text-blue-700 font-bold bg-blue-200 px-4 py-2 rounded-lg text-base border-2 border-blue-300">
+                        ${draggedElement.textContent}
+                    </div>
+                `;
+                
+                draggedElement.style.opacity = '0.3';
+                draggedElement.draggable = false;
+                
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const progress = (Object.keys(matches).length / totalQuestions) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = currentScore;
+        }
+
+        // Check answers
+        document.getElementById('check-answers').addEventListener('click', function() {
+            let correctAnswers = 0;
+            
+            // Reset all styling
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.classList.remove('matched', 'wrong');
+            });
+            
+            // Check each match and store answers
+            for (let questionId in matches) {
+                const answerId = matches[questionId];
+                const isCorrect = questionId === answerId;
+                
+                const dropZone = document.querySelector(`[data-correct-id="${answerId}"]`);
+                
+                // Store answer details
+                const questionData = gameData.find(item => item.id == questionId);
+                const answerData = gameData.find(item => item.id == answerId);
+                
+                const answerDetail = {
+                    question: questionData.question,
+                    studentAnswer: answerData.answer,
+                    correctAnswer: questionData.answer,
+                    isCorrect: isCorrect
+                };
+                
+                if (currentLesson === 1) {
+                    lesson1Answers[questionId] = answerDetail;
+                } else {
+                    lesson2Answers[questionId] = answerDetail;
+                }
+                
+                if (isCorrect) {
+                    correctAnswers++;
+                    dropZone.classList.add('matched');
+                } else {
+                    dropZone.classList.add('wrong');
+                }
+            }
+            
+            currentScore = correctAnswers; // Mỗi câu đúng = 1 điểm
+            updateScore();
+            
+            // Store lesson score
+            if (currentLesson === 1) {
+                lesson1Score = correctAnswers;
+            } else {
+                lesson2Score = correctAnswers;
+            }
+            
+            completedLessons.push(currentLesson);
+            totalScore = lesson1Score + lesson2Score;
+            
+            // Add celebration effects
+            if (correctAnswers === totalQuestions) {
+                createConfetti();
+                document.querySelector('#game-screen .max-w-7xl').classList.add('celebration');
+            }
+            
+            // Show results longer if there are wrong answers
+            const delayTime = correctAnswers === totalQuestions ? 1500 : 3000;
+            
+            setTimeout(() => {
+                if (completedLessons.length < 2) {
+                    // Move to next lesson
+                    currentLesson = currentLesson === 1 ? 2 : 1;
+                    showTransition();
+                } else {
+                    // Show final results
+                    showResults();
+                }
+            }, delayTime);
+        });
+
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 3 + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3000);
+                }, i * 50);
+            }
+        }
+
+        function showTransition() {
+            gameScreen.classList.add('hidden');
+            transitionScreen.classList.remove('hidden');
+            
+            document.getElementById('lesson1-score').textContent = lesson1Score;
+        }
+
+        function showResults() {
+            gameScreen.classList.add('hidden');
+            transitionScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            document.getElementById('final-name').textContent = studentInfo.name;
+            document.getElementById('final-class').textContent = studentInfo.class;
+            document.getElementById('final-lesson1-score').textContent = lesson1Score;
+            document.getElementById('final-lesson2-score').textContent = lesson2Score;
+            document.getElementById('final-total-score').textContent = totalScore;
+            
+            // Set emoji based on total score percentage
+            const resultEmoji = document.getElementById('result-emoji');
+            const percentage = (totalScore / 9) * 100;
+            if (percentage >= 90) {
+                resultEmoji.textContent = '🏆';
+            } else if (percentage >= 80) {
+                resultEmoji.textContent = '🎉';
+            } else if (percentage >= 70) {
+                resultEmoji.textContent = '👏';
+            } else {
+                resultEmoji.textContent = '💪';
+            }
+        }
+
+        // Transition screen button
+        document.getElementById('continue-to-lesson2').addEventListener('click', function() {
+            transitionScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            initializeGame();
+        });
+
+        // Result screen buttons
+        document.getElementById('view-details').addEventListener('click', function() {
+            showDetailScreen();
+        });
+
+        document.getElementById('send-result').addEventListener('click', function() {
+            sendResultToTeacher();
+        });
+
+        document.getElementById('new-student').addEventListener('click', function() {
+            resultScreen.classList.add('hidden');
+            registrationScreen.classList.remove('hidden');
+            document.getElementById('student-form').reset();
+            // Reset all data
+            lesson1Answers = {};
+            lesson2Answers = {};
+            completedLessons = [];
+        });
+
+        // Detail screen button
+        document.getElementById('back-to-result').addEventListener('click', function() {
+            detailScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+        });
+
+        function showDetailScreen() {
+            resultScreen.classList.add('hidden');
+            detailScreen.classList.remove('hidden');
+            
+            // Populate detail screen
+            document.getElementById('detail-name').textContent = studentInfo.name;
+            document.getElementById('detail-class').textContent = studentInfo.class;
+            document.getElementById('detail-total').textContent = totalScore + '/9';
+            document.getElementById('lesson1-detail-score').textContent = lesson1Score + '/5';
+            document.getElementById('lesson2-detail-score').textContent = lesson2Score + '/4';
+            
+            // Show lesson 1 details
+            const lesson1Container = document.getElementById('lesson1-details');
+            lesson1Container.innerHTML = '';
+            for (let questionId in lesson1Answers) {
+                const answer = lesson1Answers[questionId];
+                const div = document.createElement('div');
+                div.className = `border-2 rounded-lg p-4 ${answer.isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}`;
+                div.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="text-2xl">${answer.isCorrect ? '✅' : '❌'}</div>
+                        <div class="flex-1">
+                            <div class="font-bold text-gray-800 mb-2">${answer.question}</div>
+                            <div class="text-sm text-gray-600 mb-1">
+                                <span class="font-medium">Bạn chọn:</span> ${answer.studentAnswer}
+                            </div>
+                            ${!answer.isCorrect ? `
+                                <div class="text-sm text-green-700">
+                                    <span class="font-medium">Đáp án đúng:</span> ${answer.correctAnswer}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                lesson1Container.appendChild(div);
+            }
+            
+            // Show lesson 2 details
+            const lesson2Container = document.getElementById('lesson2-details');
+            lesson2Container.innerHTML = '';
+            for (let questionId in lesson2Answers) {
+                const answer = lesson2Answers[questionId];
+                const div = document.createElement('div');
+                div.className = `border-2 rounded-lg p-4 ${answer.isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}`;
+                div.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="text-2xl">${answer.isCorrect ? '✅' : '❌'}</div>
+                        <div class="flex-1">
+                            <div class="font-bold text-gray-800 mb-2">${answer.question}</div>
+                            <div class="text-sm text-gray-600 mb-1">
+                                <span class="font-medium">Bạn chọn:</span> ${answer.studentAnswer}
+                            </div>
+                            ${!answer.isCorrect ? `
+                                <div class="text-sm text-green-700">
+                                    <span class="font-medium">Đáp án đúng:</span> ${answer.correctAnswer}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                lesson2Container.appendChild(div);
+            }
+        }
+
+        function sendResultToTeacher() {
+            const now = new Date();
+            const timeString = now.toLocaleString('vi-VN');
+            
+            // Create detailed result text
+            let resultText = `📊 KẾT QUẢ BÀI KIỂM TRA TIN HỌC\n\n`;
+            resultText += `👤 Học sinh: ${studentInfo.name}\n`;
+            resultText += `🏫 Lớp: ${studentInfo.class}\n`;
+            resultText += `⏰ Thời gian: ${timeString}\n`;
+            resultText += `🎯 Tổng điểm: ${totalScore}/9 điểm\n\n`;
+            
+            resultText += `📝 CHI TIẾT:\n`;
+            resultText += `⌨️ Bài 1 - Thiết bị nhập liệu: ${lesson1Score}/5 điểm\n`;
+            resultText += `🖨️ Bài 2 - Thiết bị xuất liệu: ${lesson2Score}/4 điểm\n\n`;
+            
+            // Add wrong answers details
+            let hasWrongAnswers = false;
+            resultText += `❌ CÁC CÂU SAI:\n`;
+            
+            for (let questionId in lesson1Answers) {
+                const answer = lesson1Answers[questionId];
+                if (!answer.isCorrect) {
+                    hasWrongAnswers = true;
+                    resultText += `• ${answer.question}: Chọn "${answer.studentAnswer}" (Đúng: "${answer.correctAnswer}")\n`;
+                }
+            }
+            
+            for (let questionId in lesson2Answers) {
+                const answer = lesson2Answers[questionId];
+                if (!answer.isCorrect) {
+                    hasWrongAnswers = true;
+                    resultText += `• ${answer.question}: Chọn "${answer.studentAnswer}" (Đúng: "${answer.correctAnswer}")\n`;
+                }
+            }
+            
+            if (!hasWrongAnswers) {
+                resultText += `🎉 Không có câu nào sai! Xuất sắc!\n`;
+            }
+            
+            // Create email
+            const subject = `[Tin Học] Kết quả ${studentInfo.name} - Lớp ${studentInfo.class} (${totalScore}/9 điểm)`;
+            const body = encodeURIComponent(resultText);
+            const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${body}`;
+            
+            // Show success message
+            const button = document.getElementById('send-result');
+            const originalText = button.innerHTML;
+            button.innerHTML = '✅ Đã Gửi!';
+            button.disabled = true;
+            
+            // Open email client
+            window.open(mailtoLink);
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }, 3000);
+        }
+
+        // Reset drag opacity on drag end
+        document.addEventListener('dragend', function(e) {
+            if (e.target.classList.contains('draggable')) {
+                e.target.style.opacity = '1';
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97c37412518d3f93',t:'MTc1NzM4NzAxNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
